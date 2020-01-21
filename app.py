@@ -6,11 +6,9 @@ Author: Binny Abraham
 """
 
 from aws_cdk import core
-from binnydemohostnet.hosted_zone_stack import HostedZoneStack
-from binnydemohostnet.dns_certificate_stack import DnsCertificateStack
-from binnydemohostnet.replica_bucket_stack import ReplicaBucketStack
-from binnydemohostnet.replica_role_stack import ReplicaRoleStack
-from binnydemohostnet.source_bucket_stack import SourceBucketStack
+from neilandkane.hosted_zone_stack import HostedZoneStack
+from neilandkane.dns_certificate_stack import DnsCertificateStack
+from neilandkane.replica_bucket_stack import ReplicaBucketStack
 
 from cdk_config import CDK_ENVIRONMENT_VARIABLES, account, region
 
@@ -35,28 +33,9 @@ hostedZoneStack = HostedZoneStack(
 # # create replica bucket stack
 # CDK_ENVIRONMENT_VARIABLES['region'] = 'eu-west-1'
 
-# bucketReplicaStack = ReplicaBucketStack(
+# bucketReplicaStack = ContentBucketStack(
 #     app,
-#     CDK_ENVIRONMENT_VARIABLES['replicabucket']['stack_id'],
-#     env=CDK_ENVIRONMENT_VARIABLES
-# )
-
-
-# # create replica role stack
-# CDK_ENVIRONMENT_VARIABLES['region'] = 'us-east-1'
-# ReplicaRoleStack = ReplicaRoleStack(
-#     app,
-#     CDK_ENVIRONMENT_VARIABLES['replicaiamrole']['stack_id'],
-#     env=CDK_ENVIRONMENT_VARIABLES
-# )
-
-
-# # create bucket stack
-# CDK_ENVIRONMENT_VARIABLES['region'] = 'us-east-1'
-
-# bucketStack = SourceBucketStack(
-#     app,
-#     CDK_ENVIRONMENT_VARIABLES['sourcebucket']['stack_id'],
+#     CDK_ENVIRONMENT_VARIABLES['contentbucket']['stack_id'],
 #     env=CDK_ENVIRONMENT_VARIABLES
 # )
 
