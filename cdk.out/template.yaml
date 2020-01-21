@@ -1,0 +1,442 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  ProjectCode:
+    Type: String
+  Environment:
+    Type: String
+  RootDomain:
+    Type: String
+  DelegatedHostedZoneName:
+    Type: String
+  PrimaryRegion:
+    Type: String
+  SecondaryRegion:
+    Type: String
+  CertArn:
+    Type: String
+  CloudFrontOaiCanonicalUserId:
+    Type: String
+  CloudFrontOaiId:
+    Type: String
+  CloudFrontDistroDefaultRootObject:
+    Type: String
+  CloudFrontDistroDefaultTTL:
+    Type: String
+  CloudFrontDistroMinTTL:
+    Type: String
+  CloudFrontDistroMaxTTL:
+    Type: String
+  UrlRewriteLambdaArnWithVersion:
+    Type: String
+  WebsiteContentGitHubRepoOwner:
+    Type: String
+  WebsiteContentGitHubRepoName:
+    Type: String
+  WebsiteContentGitHubOAuthToken:
+    Type: String
+  WebsiteContentGitHubRepoBranch:
+    Type: String
+  WebsiteContentPipelineSnsEmail:
+    Type: String
+  HugoUrl:
+    Type: String
+  HugoVersion:
+    Type: String
+  BuildCommand:
+    Type: String
+
+Conditions:
+  isPrimaryRegion: !Equals [!Ref 'AWS::Region', !Ref PrimaryRegion]
+  isProd: !Equals [!Ref Environment, prod]
+
+Resources:
+  SiteContentBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Sub '${ProjectCode}-${Environment}-${AWS::Region}-content'
+      VersioningConfiguration:
+        Status: Enabled
+      CorsConfiguration:
+        CorsRules:
+          -
+            Id: AllowApiGw
+            MaxAge: 300
+            AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+              - POST
+            AllowedOrigins:
+              - "*"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      ReplicationConfiguration:
+        Fn::If:
+          - isPrimaryRegion
+          - Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/${ProjectCode}/${Environment}/Roles/Services/S3/${ProjectCode}-${Environment}-S3ReplicationRole'
+            Rules:
+              -
+                Destination:
+                  Bucket: !Sub 'arn:aws:s3:::${ProjectCode}-${Environment}-${SecondaryRegion}-content'
+                Prefix: ""
+                Status: Enabled
+          - !Ref 'AWS::NoValue'
+      Tags:
+        -
+          Key: Name
+          Value: !Sub '${ProjectCode}-${Environment}-${AWS::Region}-content'
+        -
+          Key: Environment
+          Value: !Ref Environment
+        -
+          Key: ProjectCode
+          Value: !Ref ProjectCode
+  SiteContentBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref SiteContentBucket
+      PolicyDocument:
+        Statement:
+          -
+            Action:
+              - s3:GetObject
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - "arn:aws:s3:::"
+                  - !Ref SiteContentBucket
+                  - "/*"
+            Principal:
+              CanonicalUser: !Ref CloudFrontOaiCanonicalUserId
+  CloudFrontLoggingBucket:
+    Condition: isPrimaryRegion
+    Type: "AWS::S3::Bucket"
+    Properties:
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      Tags:
+        -
+          Key: Name
+          Value: !Sub '${ProjectCode}-${Environment}-${AWS::Region}-cloudfrontlogs'
+        -
+          Key: Environment
+          Value: !Ref Environment
+        -
+          Key: ProjectCode
+          Value: !Ref ProjectCode
+  CloudFrontLoggingBucketPolicy:
+    Condition: isPrimaryRegion
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref CloudFrontLoggingBucket
+      PolicyDocument:
+        Statement:
+          -
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - "arn:aws:s3:::"
+                  - !Ref CloudFrontLoggingBucket
+                  - "/*"
+            Principal:
+              CanonicalUser: !Ref CloudFrontOaiCanonicalUserId
+  CloudFrontDistro:
+    Condition: isPrimaryRegion
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        Aliases:
+        - !Sub '${Environment}-eu-west-1.${DelegatedHostedZoneName}'
+        - !Sub '${Environment}-eu-central-1.${DelegatedHostedZoneName}'
+        - !Sub '${Environment}.${DelegatedHostedZoneName}'
+        - Fn::If:
+          - isProd
+          - !Ref RootDomain
+          - !Ref AWS::NoValue
+        - Fn::If:
+          - isProd
+          - !Sub 'www.${RootDomain}'
+          - !Ref AWS::NoValue
+        Logging:
+          Bucket: !GetAtt CloudFrontLoggingBucket.DomainName
+          IncludeCookies: false
+          Prefix: cf-access-logs
+        DefaultCacheBehavior:
+          DefaultTTL: !Ref CloudFrontDistroDefaultTTL
+          MinTTL: !Ref CloudFrontDistroMinTTL
+          MaxTTL: !Ref CloudFrontDistroMaxTTL
+          AllowedMethods:
+            - HEAD
+            - DELETE
+            - POST
+            - GET
+            - OPTIONS
+            - PUT
+            - PATCH
+          TargetOriginId: !Sub '${ProjectCode}-${Environment}-origin'
+          ViewerProtocolPolicy: redirect-to-https
+          ForwardedValues:
+            QueryString: False
+            Cookies:
+              Forward: none
+          LambdaFunctionAssociations:
+           -
+             EventType: origin-request
+             LambdaFunctionARN: !Ref UrlRewriteLambdaArnWithVersion
+        Comment: !Sub '${ProjectCode}-${Environment}-${AWS::Region}'
+        DefaultRootObject: !Ref CloudFrontDistroDefaultRootObject
+        CustomErrorResponses:
+          -
+            ErrorCode: 400
+            ErrorCachingMinTTL: 60
+            ResponseCode: 400
+            ResponsePagePath: /errors/400/index.html
+          -
+            ErrorCode: 403
+            ErrorCachingMinTTL: 60
+            ResponseCode: 404
+            ResponsePagePath: /errors/404/index.html
+          -
+            ErrorCode: 404
+            ErrorCachingMinTTL: 60
+            ResponseCode: 404
+            ResponsePagePath: /errors/404/index.html
+          -
+            ErrorCode: 405
+            ErrorCachingMinTTL: 60
+            ResponseCode: 405
+            ResponsePagePath: /errors/405/index.html
+          -
+            ErrorCode: 414
+            ErrorCachingMinTTL: 60
+            ResponseCode: 414
+            ResponsePagePath: /errors/414/index.html
+          -
+            ErrorCode: 500
+            ErrorCachingMinTTL: 60
+            ResponseCode: 500
+            ResponsePagePath: /errors/500/index.html
+          -
+            ErrorCode: 501
+            ErrorCachingMinTTL: 60
+            ResponseCode: 501
+            ResponsePagePath: /errors/501/index.html
+          -
+            ErrorCode: 502
+            ErrorCachingMinTTL: 60
+            ResponseCode: 502
+            ResponsePagePath: /errors/502/index.html
+          -
+            ErrorCode: 503
+            ErrorCachingMinTTL: 60
+            ResponseCode: 503
+            ResponsePagePath: /errors/503/index.html
+          -
+            ErrorCode: 504
+            ErrorCachingMinTTL: 60
+            ResponseCode: 504
+            ResponsePagePath: /errors/504/index.html
+        Enabled: True
+        IPV6Enabled: False
+        Origins:
+          -
+            Id: !Sub '${ProjectCode}-${Environment}-origin'
+            DomainName: !GetAtt SiteContentBucket.DomainName
+            S3OriginConfig:
+              OriginAccessIdentity:
+                Fn::Join:
+                  - ""
+                  - - "origin-access-identity/cloudfront/"
+                    - !Ref CloudFrontOaiId
+        PriceClass: PriceClass_All
+        ViewerCertificate:
+          AcmCertificateArn: !Ref CertArn
+          SslSupportMethod: sni-only
+  DnsRecord:
+    Condition: isPrimaryRegion
+    Type: "AWS::Route53::RecordSet"
+    Properties:
+      HostedZoneName: !Sub '${DelegatedHostedZoneName}.'
+      Name: !Sub '${Environment}.${DelegatedHostedZoneName}.'
+      AliasTarget:
+        DNSName: !GetAtt CloudFrontDistro.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2 # CloudFront HostedZoneId, Its a constant.
+      Type: A
+  SiteContentCodePipelineArtifactBucket:
+    Condition: isPrimaryRegion
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Sub ${ProjectCode}-${Environment}-website-artifacts
+      Tags:
+        -
+          Key: Name
+          Value: !Sub ${ProjectCode}-${Environment}-website-artifacts
+        -
+          Key: ProjectCode
+          Value: !Ref ProjectCode
+        -
+          Key: Environment
+          Value: !Ref Environment
+  SiteContentCodeBuild:
+    Condition: isPrimaryRegion
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub '${ProjectCode}-${Environment}-SiteContent'
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/python:3.6.5
+        Type: LINUX_CONTAINER
+      LogsConfig:
+        CloudWatchLogs:
+          Status: ENABLED
+      ServiceRole:
+        Fn::ImportValue:
+          !Sub '${ProjectCode}-${Environment}-CodeBuildRoleArn'
+      TimeoutInMinutes: 5
+      Tags:
+        -
+          Key: Name
+          Value: !Sub '${ProjectCode}-${Environment}-WebsiteContent'
+        -
+          Key: ProjectCode
+          Value: !Ref ProjectCode
+        -
+          Key: Environment
+          Value: !Ref Environment
+        -
+          Key: BuildType
+          Value: hugo
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec:
+          Fn::Sub:
+            - |-
+              version: 0.2
+              phases:
+                install:
+                  commands:
+                    - pip install Pygments
+                    - wget ${Url}/v${Version}/hugo_${Version}_Linux-64bit.deb
+                    - dpkg -i hugo_${Version}_Linux-64bit.deb
+                build:
+                  commands:
+                    - ${BuildCommand}
+                post_build:
+                  commands:
+                    - aws s3 sync --delete public s3://${DestinationBucket}
+            - BuildCommand: !Ref BuildCommand
+              DestinationBucket: !Ref SiteContentBucket
+              Url: !Ref HugoUrl
+              Version: !Ref HugoVersion
+  CodePipelineSNSTopic:
+    Condition: isPrimaryRegion
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName:
+        Fn::If:
+          - isProd
+          - 'InfonasProdWebsiteContent'
+          - 'InfonasStagingWebsiteContent'
+      TopicName: !Sub '${ProjectCode}-${Environment}-WebsiteContent'
+      Subscription:
+        - Endpoint: !Ref WebsiteContentPipelineSnsEmail
+          Protocol: email
+  NoReplySNSTopic:
+    Condition: isPrimaryRegion
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: 'NoReply'
+      TopicName: !Sub '${ProjectCode}-${Environment}-noreply'
+      Subscription:
+        - Endpoint: 'noreply@infonas.com'
+          Protocol: email
+  SiteContentPipeline:
+    Condition: isPrimaryRegion
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore:
+        Location: !Ref SiteContentCodePipelineArtifactBucket
+        Type: S3
+      RestartExecutionOnUpdate: False
+      RoleArn:
+        Fn::ImportValue:
+          !Sub '${ProjectCode}-${Environment}-CodePipelineRoleArn'
+      DisableInboundStageTransitions: []
+      Stages:
+        - Name: Source
+          Actions:
+            -
+              Name: SourceAction
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: '1'
+              Configuration:
+                Owner: !Ref WebsiteContentGitHubRepoOwner
+                Repo : !Ref WebsiteContentGitHubRepoName
+                Branch: !Ref WebsiteContentGitHubRepoBranch
+                OAuthToken: !Ref WebsiteContentGitHubOAuthToken
+                PollForSourceChanges: False
+              OutputArtifacts:
+                - Name: SourceOutput
+              RunOrder: 1
+        - Name: BuildAndDeploy
+          Actions:
+            -
+              Name: BuildStagingAndDeploy
+              InputArtifacts:
+                - Name: SourceOutput
+              OutputArtifacts:
+                - Name: !Sub ${ProjectCode}-${Environment}-Output
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              Configuration:
+                ProjectName: !Sub ${ProjectCode}-${Environment}-SiteContent
+              RunOrder: 1
+  PipelineWebhook:
+    Condition: isPrimaryRegion
+    Type: "AWS::CodePipeline::Webhook"
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: !Ref WebsiteContentGitHubOAuthToken
+      Filters:
+        -
+          JsonPath: "$.ref"
+          MatchEquals: !Sub 'refs/heads/${WebsiteContentGitHubRepoBranch}'
+      TargetPipeline: !Ref SiteContentPipeline
+      TargetAction: SourceAction
+      Name: !Sub '${ProjectCode}-${Environment}-PipelineWebhook'
+      TargetPipelineVersion: 1
+      RegisterWithThirdParty: True
+
+Outputs:
+  CloudFrontDistributionDomainName:
+    Condition: isPrimaryRegion
+    Value: !GetAtt CloudFrontDistro.DomainName
+    Export:
+      Name: !Sub ${ProjectCode}-${Environment}-CloudFrontDistributionDomainName
+  CloudFrontDistributionId:
+    Condition: isPrimaryRegion
+    Value: !Ref CloudFrontDistro
+    Export:
+      Name: !Sub ${ProjectCode}-${Environment}-CloudFrontDistributionId
