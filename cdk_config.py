@@ -9,7 +9,8 @@ import os
 from aws_cdk import core
 
 account = 'binnyabraham'
-region = 'us-east-1'
+account_alias = 'binnyabraham'
+region = 'eu-west-1'
 owner = "binnyabraham"
 project_code = 'nkwww'
 environment = 'dev'
@@ -20,73 +21,35 @@ content_bucket_name = 'neilandkane.com'
 COMMON_VARIABLES = {
     'project_code': project_code,
     'environment': environment,
-    'cfn_parameters': {
-        'ProjectCode': {
-            'type': 'String',
-            'default': project_code,
-            'description' : 'Project Code'
-        },
-        'Environment': {
-            'type': 'String',
-            'default': environment,
-            'description': 'Environment'
-        },
-    },
-    'cfn_tags': {
-        'ProjectCode': project_code,
-        'Environment': environment,
-        'Owner': owner
-    }
 }
 
 HOSTED_ZONE_VARIABLES = {
-    'stack_id': '{}-{}-{}-HostedZone'.format(project_code, environment, region),
-    'logical_id': 'HostedZone',
-    'cfn_parameters': {
-        'DelegatedHostedZoneName': {
-            'type': 'String',
-            'default': delegated_hosted_zone_name,
-            'description': 'Delegated Hosted Zone'
-        },
-    },
-    'cfn_tags': {
-        'Name': 'NeilAndKaneHostedZone'
-    },
+    'sequence': 1,
+    'suffix': 'hosted-zone',
     'cfn_resource_variables':{
-        'HostedZone':{
-            'zone_name': delegated_hosted_zone_name
-        },
-    },
-    'cfn_output_variables': {
-        'HostedZoneId': {
-            'export_name': 'HostedZoneId',
-            'description': 'HostedZoneIdOutput'
-        },
-        'HostedZoneName': {
-            'export_name': 'HostedZoneName',
-            'description': 'HostedZoneName'
+        'hostedzone':{
+            'zone_name': delegated_hosted_zone_name,
+            'outputs': {
+                'zoneid': {
+                    'id': 'HostedZoneId',
+                    'description': 'HostedZoneIdOutput',
+                    'field_name': 'zone_id',
+                    'export_name': ''
+                },
+                'zonename': {
+                    'id': 'HostedZoneName',
+                    'description': 'HostedZoneNameOutput',
+                    'field_name': 'zone_name',
+                    'export_name': ''
+                },
+            },
         },
     },
 }
 
 DNS_CERTIFICATE_VARIABLES = {
-    'stack_id': '{}-{}-{}-DnsCertificate'.format(project_code, environment, region),
-    'logical_id': 'DnsCertificate',
-    'cfn_parameters': {
-        'HostedZoneName': {
-            'type': 'String',
-            'default': delegated_hosted_zone_name,
-            'description': 'Delegated Hosted Zone'
-        },
-        'RootDomain': {
-            'type': 'String',
-            'default': root_domain,
-            'description': 'Root Domain'
-        },
-    },
-    'cfn_tags': {
-        'Name': 'NeilAndKaneCertificate'
-    },
+    'sequence': 2,
+    'suffix': 'dns-certificate',
     'cfn_resource_variables': {
         'DnsCertificate':{
             'zone_name': delegated_hosted_zone_name,
@@ -97,40 +60,61 @@ DNS_CERTIFICATE_VARIABLES = {
 }
 
 CONTENT_BUCKET_VARIABLES = {
-    'stack_id': '{}-{}-{}-BucketReplica'.format(project_code, environment, 'eu-west-1'),
-    'logical_id': 'WebsiteContentBucket',
-    'cfn_parameters': {
-        'BucketName': {
-            'type': 'String',
-            'default': content_bucket_name,
-            'description': 'Bucket Name'
-        },
-    },
-    'cfn_tags': {
-        'Name': 'NeilAndKaneContentBucket'
-    },
+    'sequence': 2,
+    'suffix': 'website-content',
     'cfn_resource_variables':{
         'versioned': True,
-        'removal_policy':core.RemovalPolicy.DESTROY
+        'removal_policy': 'destroy',
+        'outputs': {
+            'bucketarn': {
+                'id': 'ContentBucketArn',
+                'description': 'Bucket Arn Output',
+                'field_name': 'bucket_arn',
+                'export_name': ''
+            },
+            'bucketname': {
+                'id': 'ContentBucketName',
+                'description': 'Bucket Name Output',
+                'field_name': 'bucket_name',
+                'export_name': ''
+            },
+        },
     },
-    'cfn_output_variables': {
-        'BucketReplicaArn': {
-            'export_name': 'ContentBucketArn',
-            'description': 'Bucket Arn Output'
+    'cfn_dependent_stacks': [
+        {
+            'suffix': 'hosted-zone',
+            'account': account_alias,
+            'region': 'eu-west-1'
         },
-        'BucketReplicaName': {
-            'export_name': 'ContentBucketName',
-            'description': 'Bucket Name Ouput'
+        {
+            'suffix': 'dns-certificate',
+            'account': account_alias,
+            'region': 'eu-west-1'
         },
-    }
+    ]
 }
 
 
 CDK_ENVIRONMENT_VARIABLES = {
-    # 'account': os.environ['CDK_DEFAULT_ACCOUNT'],
-    # 'region': os.environ['CDK_DEFAULT_REGION'],
     'common': COMMON_VARIABLES,
-    'hzone': HOSTED_ZONE_VARIABLES,
-    'acm': DNS_CERTIFICATE_VARIABLES,
-    'contentbucket': CONTENT_BUCKET_VARIABLES,
+    'accounts': {
+        account:{
+            'common': {
+                'alias': account_alias,
+                'sequence': 1
+            },
+            'regions': {
+                'eu-west-1': {
+                    'common': {
+                        'sequence': 1
+                    },
+                    'stacks': {
+                        'hzone': HOSTED_ZONE_VARIABLES,
+                        'acm': DNS_CERTIFICATE_VARIABLES,
+                        'contentbucket': CONTENT_BUCKET_VARIABLES,
+                    },
+                },
+            },
+        },
+    },
 }

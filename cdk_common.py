@@ -15,6 +15,28 @@ class CdkCommonStack(core.Stack):
         super().__init__(scope, id, **kwargs)
 
 
+    # COMMON FUNCTIONS
+    def generate_cfn_stack_name(self, project_code, environment, region_name, stack_suffix):
+        """Generate CFN stack name"""
+        return '{}-{}-{}-{}'.format(project_code, environment, region_name, stack_suffix)
+
+    def generate_stack_key(self, stack_id):
+        """Generate CFN stack id"""
+        return stack_id.split('-')[-1]
+
+    def generate_resource_name(self, project_code, environment, region_name, stack_name, resource_suffix):
+        """Generate CFN Resource name"""
+        return '{}-{}-{}-{}-{}'.format(project_code, environment, region_name, stack_name, resource_suffix)
+
+    def generate_outputs_from_dependent_stacks(self, project_code, environment, dependent_stacks):
+        """
+        Generate CFN Outputs from dependent stacks mentioned in config file
+        """
+        cfn_outputs = []
+        for exp_stack in dependent_stacks:
+            export_stack_name = self.generate_cfn_stack_name(project_code, environment, exp_stack['region'], exp_stack['suffix'])
+            cfn_outputs.extend(self.get_cfn_output_using_sdk(export_stack_name, exp_stack['account'], exp_stack['region']))
+        return cfn_outputs
 
 
     # PARAMETERS
@@ -102,13 +124,31 @@ class CdkCommonStack(core.Stack):
         }
 
 
-    def create_bucket(self, logical_id, bucket_name, **kwargs):
+    # CFN RESOURCES CREATION
+    # GENERATE CLOUDFORMATION RESOURCES STARTS HERE
+    def generate_cfn_resources(self, stack_key, resource_variables):
+        '''
+        Generate all Cloudformation resources here
+        '''
+        resource_dct = {}
+        for resource_key, resource_value in resource_variables.items():
+            resource_name = self.generate_resource_name(self.common['project_code'], self.common['environment'], self.region_name, stack_key, resource_value['suffix'])
+            func_name = "self.create_{}('{}{}', '{}', kwargs={})".format(resource_key, stack_key, resource_key, resource_name, resource_value)
+            resource_dct[resource_key] = eval(func_name)
 
-        s3_bucket = aws_s3.Bucket(
-            self,
-            logical_id,
-            bucket_name=bucket_name,
-            **kwargs
-        )
-        s3_bucket.grant_public_access()
-        return s3_bucket
+            # GENERATE CLOUDFORMATION OUTPUTS
+            if 'outputs' in resource_value:
+                self.generate_cfn_outputs(resource_key, resource_dct, resource_value['outputs'])
+        return resource_dct
+    # GENERATE CLOUDFORMATION RESOURCES ENDS HERE
+
+
+    # GENERATE CLOUDFORMATION OUTPUTS STARTS HERE
+    def generate_cfn_outputs(self, resource_key, resource_dct, output_variables):
+        '''
+        Generate all Cloudformation outputs here
+        '''
+        for output_key, output_value in output_variables.items():
+            export_value = eval("{}.{}".format('resource_dct[resource_key]', output_value['field_name']))
+            self.create_cfn_output(output_value['id'], export_value)
+     # GENERATE CLOUDFORMATION OUTPUTS ENDS HERE

@@ -8,36 +8,38 @@ Author: Binny Abraham
 from aws_cdk import core
 from neilandkane.hosted_zone_stack import HostedZoneStack
 from neilandkane.dns_certificate_stack import DnsCertificateStack
-from neilandkane.replica_bucket_stack import ReplicaBucketStack
+from neilandkane.content_bucket_stack import ContentBucketStack
 
 from cdk_config import CDK_ENVIRONMENT_VARIABLES, account, region
 
 app = core.App()
 
-# create hosted_zone stack
-hostedZoneStack = HostedZoneStack(
-    app,
-    CDK_ENVIRONMENT_VARIABLES['hzone']['stack_id'],
-    env=core.Environment(account=account, region=region),
-    # **CDK_ENVIRONMENT_VARIABLES
-)
+def generate_cfn_stack_name(project_code, environment, region_name, stack_suffix):
+    return '{}-{}-{}-{}'.format(project_code, environment, region_key, stack_suffix)
 
-# # create acm_certificate stack
-# dnsCertificateStack = DnsCertificateStack(
-#     app,
-#     CDK_ENVIRONMENT_VARIABLES['acm']['stack_id'],
-#     env=CDK_ENVIRONMENT_VARIABLES
-# )
+def generate_cdk_class_name(stack_suffix):
+    return "{}Stack".format(stack_suffix.replace('-', ' ').title().replace(' ',''))
+
+def generate_cdk_stack_name(cdk_class_name, cfn_stack_name, cdk_env):
+    return ("{}({},'{}',env={})".format(cdk_class_name, 'app', cfn_stack_name, cdk_env))
 
 
-# # create replica bucket stack
-# CDK_ENVIRONMENT_VARIABLES['region'] = 'eu-west-1'
+# DYNAMIC GENERATION OF STACKS USING VARIABLE FROM CDK_CONFIG FILE
+for account_key, account_value in CFN_VARIABLES['accounts'].items():
 
-# bucketReplicaStack = ContentBucketStack(
-#     app,
-#     CDK_ENVIRONMENT_VARIABLES['contentbucket']['stack_id'],
-#     env=CDK_ENVIRONMENT_VARIABLES
-# )
+    for region_key, region_value in account_value['regions'].items():
 
+        for stack_key, stack_value in region_value['stacks'].items():
+            stack_suffix = stack_value['suffix']
+            cfn_stack_name = generate_cfn_stack_name(
+                CFN_VARIABLES['common']['project_code'],
+                CFN_VARIABLES['common']['environment'],
+                region_key,
+                stack_suffix
+            )
+            cdk_class_name =  generate_cdk_class_name(stack_suffix)
+            cdk_env = Environment(account=account_key, region=region_key)
+            cdk_stack_name = generate_cdk_stack_name(cdk_class_name, cfn_stack_name, cdk_env)
+            stack_obj = eval(cdk_stack_name)
 
 app.synth()
