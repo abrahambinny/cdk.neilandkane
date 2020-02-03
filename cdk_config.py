@@ -51,7 +51,7 @@ DNS_CERTIFICATE_VARIABLES = {
     'sequence': 2,
     'suffix': 'dns-certificate',
     'cfn_resource_variables': {
-        'DnsCertificate':{
+        'dnscertificate':{
             'zone_name': delegated_hosted_zone_name,
             'CDK_DEFAULT_ACCOUNT': account,
             'CDK_DEFAULT_REGION': region,
@@ -63,20 +63,22 @@ CONTENT_BUCKET_VARIABLES = {
     'sequence': 2,
     'suffix': 'website-content',
     'cfn_resource_variables':{
-        'versioned': True,
-        'removal_policy': 'destroy',
-        'outputs': {
-            'bucketarn': {
-                'id': 'ContentBucketArn',
-                'description': 'Bucket Arn Output',
-                'field_name': 'bucket_arn',
-                'export_name': ''
-            },
-            'bucketname': {
-                'id': 'ContentBucketName',
-                'description': 'Bucket Name Output',
-                'field_name': 'bucket_name',
-                'export_name': ''
+        'bucket'{
+            'versioned': True,
+            'removal_policy': 'destroy',
+            'outputs': {
+                'bucketarn': {
+                    'id': 'ContentBucketArn',
+                    'description': 'Bucket Arn Output',
+                    'field_name': 'bucket_arn',
+                    'export_name': ''
+                },
+                'bucketname': {
+                    'id': 'ContentBucketName',
+                    'description': 'Bucket Name Output',
+                    'field_name': 'bucket_name',
+                    'export_name': ''
+                },
             },
         },
     },
@@ -95,7 +97,7 @@ CONTENT_BUCKET_VARIABLES = {
 }
 
 
-CDK_ENVIRONMENT_VARIABLES = {
+CFN_VARIABLES = {
     'common': COMMON_VARIABLES,
     'accounts': {
         account:{

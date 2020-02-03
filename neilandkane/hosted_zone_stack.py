@@ -12,32 +12,16 @@ class HostedZoneStack(CdkCommonStack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        # Generating cloudformation components in 3 steps below
-
-        # GENERATE CLOUDFORMATION PARAMETERS
-        cfn_params = kwargs['env']['common']['cfn_parameters']
-        cfn_params.update(kwargs['env']['hzone']['cfn_parameters'])
-        self.parameters = self.generate_cfn_parameters(cfn_params)
-
-        # GENERATE CLOUDFORMATION TAGS
-        cfn_tags = kwargs['env']['common']['cfn_tags']
-        cfn_tags.update(kwargs['env']['hzone']['cfn_tags'])
-        self.generate_cfn_tags(cfn_tags)
+        self.account_name = kwargs['env'].account
+        self.region_name = kwargs['env'].region
+        self.cfn_variables = CFN_VARIABLES
+        self.common = self.cfn_variables['common']
 
         # GENERATE CLOUDFORMATION RESOURCES
-        self.resources = {}
-        self.resources['ihzone'] = self.generate_cfn_resources(id, **kwargs['env']['hzone']['cfn_resource_variables'])
+        stack_key = self.generate_stack_key(id)
+        resource_variables = self.cfn_variables['accounts'][self.account_name]['regions'][self.region_name]['stacks'][stack_key]['cfn_resource_variables']
+        self.resources = self.generate_cfn_resources(stack_key, resource_variables)
 
-        # GENERATE CLOUDFORMATION OUTPUTS
-        self.generate_cfn_outputs(**kwargs['env']['hzone']['cfn_output_variables'])
-
-
-    # GENERATE CLOUDFORMATION RESOURCES STARTS HERE
-    def generate_cfn_resources(self, stack_id, **kwargs):
-        '''
-        Generate all Cloudformation resources here
-        '''
-        return self.create_hosted_zone('HostedZone', stack_id, **kwargs)
 
     def create_hosted_zone(self, logical_id, stack_id, **kwargs):
         '''
