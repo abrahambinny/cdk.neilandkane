@@ -6,6 +6,7 @@ Author: Binny Abraham
 
 from aws_cdk import core, aws_route53, aws_certificatemanager
 from cdk_common import CdkCommonStack
+from cdk_config import CFN_VARIABLES
 
 class DnsCertificateStack(CdkCommonStack):
 
@@ -45,7 +46,7 @@ class DnsCertificateStack(CdkCommonStack):
         '''
         return self.create_dns_validated_certificate(logical_id, **kwargs)
 
-    def create_dns_validated_certificate(self, logical_id, **kwargs):
+    def create_dns_certificate(self, logical_id, **kwargs):
         '''
         Create ACM certificate using aws_certificatemanager.DnsValidatedCertificate method
         '''

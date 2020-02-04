@@ -1,0 +1,23 @@
+{
+  "Resources": {
+    "zonehostedzoneA77C62C4": {
+      "Type": "AWS::Route53::HostedZone",
+      "Properties": {
+        "Name": "www.neilandkane.com."
+      },
+      "Metadata": {
+        "aws:cdk:path": "nkwww-dev-eu-west-1-hosted-zone/zonehosted_zone/Resource"
+      }
+    }
+  },
+  "Outputs": {
+    "HostedZoneId": {
+      "Value": {
+        "Ref": "zonehostedzoneA77C62C4"
+      }
+    },
+    "HostedZoneName": {
+      "Value": "www.neilandkane.com"
+    }
+  }
+}

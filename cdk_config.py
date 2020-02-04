@@ -9,7 +9,7 @@ import os
 from aws_cdk import core
 
 account = 'binnyabraham'
-account_alias = 'binnyabraham'
+account_alias = 'binny'
 region = 'eu-west-1'
 owner = "binnyabraham"
 project_code = 'nkwww'
@@ -27,13 +27,14 @@ HOSTED_ZONE_VARIABLES = {
     'sequence': 1,
     'suffix': 'hosted-zone',
     'cfn_resource_variables':{
-        'hostedzone':{
+        'hosted_zone':{
+            'suffix': 'hzone',
             'zone_name': delegated_hosted_zone_name,
             'outputs': {
                 'zoneid': {
                     'id': 'HostedZoneId',
                     'description': 'HostedZoneIdOutput',
-                    'field_name': 'zone_id',
+                    'field_name': 'hosted_zone_id',
                     'export_name': ''
                 },
                 'zonename': {
@@ -51,19 +52,28 @@ DNS_CERTIFICATE_VARIABLES = {
     'sequence': 2,
     'suffix': 'dns-certificate',
     'cfn_resource_variables': {
-        'dnscertificate':{
+        'dns_certificate':{
+            'suffix': 'certificate',
             'zone_name': delegated_hosted_zone_name,
             'CDK_DEFAULT_ACCOUNT': account,
             'CDK_DEFAULT_REGION': region,
         },
     },
+    'cfn_dependent_stacks': [
+        {
+            'suffix': 'hosted-zone',
+            'account': account_alias,
+            'region': 'eu-west-1'
+        },
+    ]
 }
 
 CONTENT_BUCKET_VARIABLES = {
     'sequence': 2,
-    'suffix': 'website-content',
+    'suffix': 'content-bucket',
     'cfn_resource_variables':{
-        'bucket'{
+        'bucket':{
+            'suffix': 'bucket',
             'versioned': True,
             'removal_policy': 'destroy',
             'outputs': {
@@ -111,9 +121,9 @@ CFN_VARIABLES = {
                         'sequence': 1
                     },
                     'stacks': {
-                        'hzone': HOSTED_ZONE_VARIABLES,
-                        'acm': DNS_CERTIFICATE_VARIABLES,
-                        'contentbucket': CONTENT_BUCKET_VARIABLES,
+                        'zone': HOSTED_ZONE_VARIABLES,
+                        # 'certificate': DNS_CERTIFICATE_VARIABLES,
+                        # 'bucket': CONTENT_BUCKET_VARIABLES,
                     },
                 },
             },

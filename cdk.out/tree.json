@@ -1,0 +1,43 @@
+{
+  "version": "tree-0.1",
+  "tree": {
+    "id": "App",
+    "path": "",
+    "children": {
+      "Tree": {
+        "id": "Tree",
+        "path": "Tree"
+      },
+      "nkwww-dev-eu-west-1-hosted-zone": {
+        "id": "nkwww-dev-eu-west-1-hosted-zone",
+        "path": "nkwww-dev-eu-west-1-hosted-zone",
+        "children": {
+          "zonehosted_zone": {
+            "id": "zonehosted_zone",
+            "path": "nkwww-dev-eu-west-1-hosted-zone/zonehosted_zone",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "nkwww-dev-eu-west-1-hosted-zone/zonehosted_zone/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Route53::HostedZone",
+                  "aws:cdk:cloudformation:props": {
+                    "name": "www.neilandkane.com."
+                  }
+                }
+              }
+            }
+          },
+          "HostedZoneId": {
+            "id": "HostedZoneId",
+            "path": "nkwww-dev-eu-west-1-hosted-zone/HostedZoneId"
+          },
+          "HostedZoneName": {
+            "id": "HostedZoneName",
+            "path": "nkwww-dev-eu-west-1-hosted-zone/HostedZoneName"
+          }
+        }
+      }
+    }
+  }
+}

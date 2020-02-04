@@ -5,12 +5,14 @@ Author: Binny Abraham
 
 """
 
+import sys, os
 from aws_cdk import core
+from aws_cdk.core import Environment
 from neilandkane.hosted_zone_stack import HostedZoneStack
 from neilandkane.dns_certificate_stack import DnsCertificateStack
 from neilandkane.content_bucket_stack import ContentBucketStack
 
-from cdk_config import CDK_ENVIRONMENT_VARIABLES, account, region
+from cdk_config import CFN_VARIABLES, account, region
 
 app = core.App()
 

@@ -18,7 +18,6 @@ aws-cdk.aws-ssm==1.17.1
 aws-cdk.core==1.17.1
 aws-cdk.cx-api==1.17.1
 aws-cdk.region-info==1.17.1
--e git+git@github.com:infonas/cdk-binnydemohostnet.git@c5206074edbdb12ec50c0b02fd4cf3f15824f1d1#egg=binnydemohostnet
 boto3==1.10.16
 botocore==1.13.16
 cattrs==0.9.0

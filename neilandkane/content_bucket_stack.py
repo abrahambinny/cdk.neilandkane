@@ -24,7 +24,7 @@ class ContentBucketStack(CdkCommonStack):
         resource_variables = self.cfn_variables['accounts'][self.account_name]['regions'][self.region_name]['stacks'][stack_key]['cfn_resource_variables']
         self.resources = self.generate_cfn_resources(stack_key, resource_variables)
 
-    def create_bucket(self, logical_id, bucket_name, **kwargs):
+    def create_content_bucket(self, logical_id, bucket_name, **kwargs):
         """
         Create bucket using aws_s3 Bucket method
         """

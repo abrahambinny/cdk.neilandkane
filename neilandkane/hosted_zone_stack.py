@@ -6,6 +6,7 @@ Author: Binny Abraham
 
 from aws_cdk import core, aws_route53
 from cdk_common import CdkCommonStack
+from cdk_config import CFN_VARIABLES
 
 class HostedZoneStack(CdkCommonStack):
 
@@ -23,23 +24,14 @@ class HostedZoneStack(CdkCommonStack):
         self.resources = self.generate_cfn_resources(stack_key, resource_variables)
 
 
-    def create_hosted_zone(self, logical_id, stack_id, **kwargs):
+    def create_hosted_zone(self, logical_id, resource_name, **kwargs):
         '''
         Create Hosted Zone using aws_cdk aws_route53.HostedZone method
         '''
+        print(kwargs)
         return aws_route53.HostedZone(
             self,
             logical_id,
-            zone_name=self.get_value_from_parameters('DelegatedHostedZoneName', self.parameters, stack_id)
+            zone_name=kwargs['kwargs']['zone_name']
         )
     # GENERATE CLOUDFORMATION RESOURCES ENDS HERE
-
-
-    # GENERATE CLOUDFORMATION OUTPUTS STARTS HERE
-    def generate_cfn_outputs(self, **kwargs):
-        '''
-        Generate all Cloudformation outputs here
-        '''
-        self.create_cfn_output('HostedZoneId', self.resources['ihzone'].hosted_zone_id, **kwargs['HostedZoneId'])
-        self.create_cfn_output('HostedZoneName', self.resources['ihzone'].zone_name, **kwargs['HostedZoneName'])
-    # GENERATE CLOUDFORMATION OUTPUTS ENDS HERE
