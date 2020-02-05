@@ -8,8 +8,8 @@ Author: Binny Abraham
 import os
 from aws_cdk import core
 
-account = 'binnyabraham'
-account_alias = 'binny'
+account = '369920941779'
+account_alias = 'binnyabraham'
 region = 'eu-west-1'
 owner = "binnyabraham"
 project_code = 'nkwww'
@@ -29,7 +29,7 @@ HOSTED_ZONE_VARIABLES = {
     'cfn_resource_variables':{
         'hosted_zone':{
             'suffix': 'hzone',
-            'zone_name': delegated_hosted_zone_name,
+            'zone_name': root_domain,
             'outputs': {
                 'zoneid': {
                     'id': 'HostedZoneId',
@@ -54,7 +54,7 @@ DNS_CERTIFICATE_VARIABLES = {
     'cfn_resource_variables': {
         'dns_certificate':{
             'suffix': 'certificate',
-            'zone_name': delegated_hosted_zone_name,
+            'zone_name': root_domain,
             'CDK_DEFAULT_ACCOUNT': account,
             'CDK_DEFAULT_REGION': region,
         },
@@ -122,7 +122,7 @@ CFN_VARIABLES = {
                     },
                     'stacks': {
                         'zone': HOSTED_ZONE_VARIABLES,
-                        # 'certificate': DNS_CERTIFICATE_VARIABLES,
+                        'certificate': DNS_CERTIFICATE_VARIABLES,
                         # 'bucket': CONTENT_BUCKET_VARIABLES,
                     },
                 },

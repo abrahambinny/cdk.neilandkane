@@ -1,0 +1,32 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Binny Abraham Assume Role
+Parameters:
+  ProjectCode:
+    Type: String
+    Default: baseline
+  BinnyAdminRoleName:
+    Type: String
+    Default: AssumeAdminRoleFromBinny
+  BinnyAccount:
+    Type: String
+    Default: 369920941779
+
+#
+Resources:
+  #
+  AssumeAdminRoleFromBinny:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref BinnyAdminRoleName
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Action: ["sts:AssumeRole"]
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${BinnyAccount}:root"
+      Path:  !Sub /${ProjectCode}/
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess

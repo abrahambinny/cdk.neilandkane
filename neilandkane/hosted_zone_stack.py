@@ -28,7 +28,6 @@ class HostedZoneStack(CdkCommonStack):
         '''
         Create Hosted Zone using aws_cdk aws_route53.HostedZone method
         '''
-        print(kwargs)
         return aws_route53.HostedZone(
             self,
             logical_id,

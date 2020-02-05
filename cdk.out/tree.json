@@ -22,7 +22,7 @@
                 "attributes": {
                   "aws:cdk:cloudformation:type": "AWS::Route53::HostedZone",
                   "aws:cdk:cloudformation:props": {
-                    "name": "www.neilandkane.com."
+                    "name": "neilandkane.com."
                   }
                 }
               }
