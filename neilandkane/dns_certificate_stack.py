@@ -32,21 +32,10 @@ class DnsCertificateStack(CdkCommonStack):
         # GENERATE CLOUDFORMATION RESOURCES
 
         resource_variables = self.cfn_variables['accounts'][self.account_name]['regions'][self.region_name]['stacks'][stack_key]['cfn_resource_variables']
-        self.resources['acm'] = self.generate_cfn_resources(stack_key, resource_variables)
-
-        # GENERATE CLOUDFORMATION OUTPUTS
-        if 'cfn_output_variables' in kwargs['env']['acm']:
-            self.generate_cfn_outputs(**kwargs['env']['acm']['cfn_output_variables'])
+        self.resources = self.generate_cfn_resources(stack_key, resource_variables)
 
 
-    # GENERATE CLOUDFORMATION RESOURCES STARTS HERE
-    def generate_cfn_resources(self, logical_id, **kwargs):
-        '''
-        Generate all Cloudformation resources here
-        '''
-        return self.create_dns_validated_certificate(logical_id, **kwargs)
-
-    def create_dns_certificate(self, logical_id, **kwargs):
+    def create_dns_certificate(self, logical_id, resource_name, **kwargs):
         '''
         Create ACM certificate using aws_certificatemanager.DnsValidatedCertificate method
         '''
