@@ -30,7 +30,6 @@ class DnsCertificateStack(CdkCommonStack):
         self.hosted_zone_name =  self.parameters['HostedZoneName']['default']
 
         # GENERATE CLOUDFORMATION RESOURCES
-
         resource_variables = self.cfn_variables['accounts'][self.account_name]['regions'][self.region_name]['stacks'][stack_key]['cfn_resource_variables']
         self.resources = self.generate_cfn_resources(stack_key, resource_variables)
 

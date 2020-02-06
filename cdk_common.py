@@ -66,7 +66,6 @@ class CdkCommonStack(core.Stack):
         '''
         output_dct = {}
         for output in cfn_outputs:
-            print(output)
             output_dct.update({output['OutputKey']:{
                 'type': 'String',
                 'default': output['OutputValue'],

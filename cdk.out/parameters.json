@@ -1,0 +1,22 @@
+{
+  "ProjectCode":"nkwww",
+  "Environment":"staging",
+  "RootDomain":"neilandkane.com",
+  "DelegatedHostedZoneName":"w.neilandkane.com",
+  "PrimaryRegion":"eu-west-1",
+  "CertArn":"",
+  "CloudFrontOaiCanonicalUserId":"",
+  "CloudFrontOaiId":"EVDEWLS1Y8I64",
+  "CloudFrontDistroDefaultRootObject":"index.html",
+  "CloudFrontDistroDefaultTTL":"0",
+  "CloudFrontDistroMinTTL":"0",
+  "CloudFrontDistroMaxTTL":"0",
+  "WebsiteContentGitHubRepoOwner":"abrahambinny@gmail.com",
+  "WebsiteContentGitHubRepoName":"git@github.com:abrahambinny/hugo.neilandkaneweb.git",
+  "WebsiteContentGitHubOAuthToken":"",
+  "WebsiteContentGitHubRepoBranch":"master",
+  "WebsiteContentPipelineSnsEmail":"abrahambinny@gmail.com",
+  "HugoUrl":"https://github.com/gohugoio/hugo/releases/download",
+  "HugoVersion":"0.62.2",
+  "BuildCommand":"hugo config config.toml"
+}
