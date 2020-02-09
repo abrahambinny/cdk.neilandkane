@@ -28,8 +28,8 @@ Parameters:
     Type: String
   CloudFrontDistroMaxTTL:
     Type: String
-  # UrlRewriteLambdaArnWithVersion:
-  #   Type: String
+  UrlRewriteLambdaArnWithVersion:
+    Type: String
   WebsiteContentGitHubRepoOwner:
     Type: String
   WebsiteContentGitHubRepoName:
@@ -148,10 +148,10 @@ Resources:
             QueryString: False
             Cookies:
               Forward: none
-          # LambdaFunctionAssociations:
-          #  -
-          #    EventType: origin-request
-          #    LambdaFunctionARN: !Ref UrlRewriteLambdaArnWithVersion
+          LambdaFunctionAssociations:
+           -
+             EventType: origin-request
+             LambdaFunctionARN: !Ref UrlRewriteLambdaArnWithVersion
         Comment: !Sub '${ProjectCode}-${Environment}-${AWS::Region}'
         DefaultRootObject: !Ref CloudFrontDistroDefaultRootObject
         CustomErrorResponses:

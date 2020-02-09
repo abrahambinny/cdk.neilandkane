@@ -25,7 +25,7 @@
   },
   {
     "ParameterKey": "CertArn",
-    "ParameterValue": "arn:aws:acm:us-east-1:369920941779:certificate/33808e16-20dd-4ffa-bcf0-07d9135bd76a"
+    "ParameterValue": "arn:aws:acm:us-east-1:369920941779:certificate/dfa3ef0d-6dd6-4be7-bee0-1ef564bc74c5"
   },
   {
     "ParameterKey": "CloudFrontOaiCanonicalUserId",
@@ -61,7 +61,7 @@
   },
   {
     "ParameterKey": "WebsiteContentGitHubOAuthToken",
-    "ParameterValue": "4c0f88dfad85dd8d5c9a3b73026945f6d214c03c"
+    "ParameterValue": "f1856cab1f490f6e54ee700419899c03fa611c8c"
   },
   {
     "ParameterKey": "WebsiteContentGitHubRepoBranch",
@@ -81,6 +81,10 @@
   },
   {
     "ParameterKey": "BuildCommand",
-    "ParameterValue": "hugo config config.toml"
+    "ParameterValue": "hugo --config config.toml"
+  },
+  {
+    "ParameterKey": "UrlRewriteLambdaArnWithVersion",
+    "ParameterValue": "arn:aws:lambda:us-east-1:369920941779:function:nkwww-dev-urlRewrite-CfUrlRewrite-FB3E7VQH7OHC:2"
   }
 ]

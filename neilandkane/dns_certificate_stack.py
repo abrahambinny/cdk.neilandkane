@@ -44,7 +44,9 @@ class DnsCertificateStack(CdkCommonStack):
             self,
             logical_id,
             hosted_zone = ihosted_zone,
-            domain_name = [self.hosted_zone_name, '*.{}'.format(self.hosted_zone_name)]
+            # domain_name = self.hosted_zone_name,
+            domain_name = '*.{}'.format(self.hosted_zone_name),
+            subject_alternative_names = [self.hosted_zone_name, '*.{}'.format(self.hosted_zone_name)],
             validation_method = aws_certificatemanager.ValidationMethod.DNS
         )
 

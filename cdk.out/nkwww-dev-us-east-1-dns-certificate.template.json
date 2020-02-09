@@ -142,7 +142,11 @@
             "Arn"
           ]
         },
-        "DomainName": "neilandkane.com",
+        "DomainName": "*.neilandkane.com",
+        "SubjectAlternativeNames": [
+          "neilandkane.com",
+          "*.neilandkane.com"
+        ],
         "HostedZoneId": "ZS4HK353QXOPZ"
       },
       "UpdateReplacePolicy": "Delete",
