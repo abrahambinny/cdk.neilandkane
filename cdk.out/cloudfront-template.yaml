@@ -28,8 +28,8 @@ Parameters:
     Type: String
   CloudFrontDistroMaxTTL:
     Type: String
-  UrlRewriteLambdaArnWithVersion:
-    Type: String
+  # UrlRewriteLambdaArnWithVersion:
+  #   Type: String
   WebsiteContentGitHubRepoOwner:
     Type: String
   WebsiteContentGitHubRepoName:
@@ -125,9 +125,7 @@ Resources:
     Properties:
       DistributionConfig:
         Aliases:
-        - !Sub '${Environment}-eu-west-1.${DelegatedHostedZoneName}'
-        - !Sub '${Environment}-eu-central-1.${DelegatedHostedZoneName}'
-        - !Sub '${Environment}.${DelegatedHostedZoneName}'
+        - !Ref RootDomain
         Logging:
           Bucket: !GetAtt CloudFrontLoggingBucket.DomainName
           IncludeCookies: false
@@ -227,8 +225,8 @@ Resources:
   DnsRecord:
     Type: "AWS::Route53::RecordSet"
     Properties:
-      HostedZoneName: !Sub '${DelegatedHostedZoneName}.'
-      Name: !Sub '${Environment}.${DelegatedHostedZoneName}.'
+      HostedZoneName: !Sub '${RootDomain}.'
+      Name: !Sub '${RootDomain}.'
       AliasTarget:
         DNSName: !GetAtt CloudFrontDistro.DomainName
         HostedZoneId: Z2FDTNDATAQYW2 # CloudFront HostedZoneId, Its a constant.

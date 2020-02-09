@@ -1,0 +1,118 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  ProjectCode:
+    Type: String
+    Default: "nkwww"
+  Environment:
+    Type: String
+    Default: "dev"
+Resources:
+  CloudFrontOai:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub "${ProjectCode}-${Environment}-${AWS::Region} CloudFront-ORI"
+  CloudFormationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: ['sts:AssumeRole']
+          Effect: Allow
+          Principal:
+            Service: [cloudformation.amazonaws.com]
+        Version: '2012-10-17'
+      Path: !Sub '/${ProjectCode}/${Environment}/Roles/Services/CloudFormation/'
+      RoleName: !Sub '${ProjectCode}-${Environment}-CloudFormationRole'
+      Policies:
+        - PolicyName: !Sub '${ProjectCode}-${Environment}-CloudFormationAccessPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - '*'
+                  - 'iam:PassRole'
+                Effect: Allow
+                Resource: '*'
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: ['sts:AssumeRole']
+          Effect: Allow
+          Principal:
+            Service: [codepipeline.amazonaws.com]
+        Version: '2012-10-17'
+      Path: !Sub '/${ProjectCode}/${Environment}/Roles/Services/CodePipeline/'
+      RoleName: !Sub '${ProjectCode}-${Environment}-CodePipelineRole'
+      Policies:
+        - PolicyName: !Sub '${ProjectCode}-${Environment}-CodePipelineAccessPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                - 'iam:PassRole'
+                - 'cloudwatch:CreateLogGroup'
+                - 'cloudwatch:CreateLogStream'
+                - 'cloudwatch:PutLogEvents'
+                - 'cloudwatch:DescribeLogGroups'
+                - 'cloudwatch:DescribeLogStreams'
+                - 'sns:Publish'
+                - 'codedeploy:*'
+                - 's3:*'
+                - 'lambda:InvokeFunction'
+                - 'lambda:ListFunctions'
+                - 'cloudformation:*'
+                - 'codebuild:*'
+                Effect: Allow
+                Resource: '*'
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: ['sts:AssumeRole']
+          Effect: Allow
+          Principal:
+            Service: [codebuild.amazonaws.com]
+        Version: '2012-10-17'
+      Path:  !Sub '/${ProjectCode}/${Environment}/Roles/Services/CodeBuild/'
+      RoleName: !Sub '${ProjectCode}-${Environment}-CodeBuildRole'
+      Policies:
+        - PolicyName: !Sub '${ProjectCode}-${Environment}-CodeBuildPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              -
+                Action:
+                  - 's3:*'
+                  - 'codebuild:*'
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  - 'cloudfront:*'
+                Effect: Allow
+                Resource: '*'
+Outputs:
+  CloudFormationRoleArn:
+    Value: !GetAtt CloudFormationRole.Arn
+    Export:
+      Name: !Sub '${ProjectCode}-${Environment}-CloudFormationRoleArn'
+  CodePipelineRoleArn:
+    Value: !GetAtt CodePipelineRole.Arn
+    Export:
+      Name: !Sub '${ProjectCode}-${Environment}-CodePipelineRoleArn'
+  CodeBuildRoleArn:
+    Value: !GetAtt CodeBuildRole.Arn
+    Export:
+      Name: !Sub '${ProjectCode}-${Environment}-CodeBuildRoleArn'
+  CloudFrontOaiId:
+    Value: !Ref CloudFrontOai
+    Export:
+      Name: !Sub ${ProjectCode}-${Environment}-CloudFrontOaiId
+  CloudFrontOaiCanonicalUserId:
+    Value: !GetAtt CloudFrontOai.S3CanonicalUserId
+    Export:
+      Name: !Sub ${ProjectCode}-${Environment}-CloudFrontOaiCanonicalUserId

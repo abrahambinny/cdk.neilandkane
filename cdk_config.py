@@ -123,7 +123,14 @@ CFN_VARIABLES = {
                     'stacks': {
                         'zone': HOSTED_ZONE_VARIABLES,
                         'certificate': DNS_CERTIFICATE_VARIABLES,
-                        # 'bucket': CONTENT_BUCKET_VARIABLES,
+                    },
+                },
+                'us-east-1': {
+                    'common': {
+                        'sequence': 1
+                    },
+                    'stacks': {
+                        'certificate': DNS_CERTIFICATE_VARIABLES,
                     },
                 },
             },

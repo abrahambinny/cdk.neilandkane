@@ -16,7 +16,7 @@ Resources:
               - Ref: AWS::Partition
               - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
     Metadata:
-      aws:cdk:path: nkwww-dev-eu-west-1-dns-certificate/certificatedns_certificate/CertificateRequestorFunction/ServiceRole/Resource
+      aws:cdk:path: nkwww-dev-us-east-1-dns-certificate/certificatedns_certificate/CertificateRequestorFunction/ServiceRole/Resource
   certificatednscertificateCertificateRequestorFunctionServiceRoleDefaultPolicy6DF76079:
     Type: AWS::IAM::Policy
     Properties:
@@ -39,7 +39,7 @@ Resources:
       Roles:
         - Ref: certificatednscertificateCertificateRequestorFunctionServiceRole6D2A6116
     Metadata:
-      aws:cdk:path: nkwww-dev-eu-west-1-dns-certificate/certificatedns_certificate/CertificateRequestorFunction/ServiceRole/DefaultPolicy/Resource
+      aws:cdk:path: nkwww-dev-us-east-1-dns-certificate/certificatedns_certificate/CertificateRequestorFunction/ServiceRole/DefaultPolicy/Resource
   certificatednscertificateCertificateRequestorFunctionB912B0F3:
     Type: AWS::Lambda::Function
     Properties:
@@ -70,7 +70,7 @@ Resources:
       - certificatednscertificateCertificateRequestorFunctionServiceRoleDefaultPolicy6DF76079
       - certificatednscertificateCertificateRequestorFunctionServiceRole6D2A6116
     Metadata:
-      aws:cdk:path: nkwww-dev-eu-west-1-dns-certificate/certificatedns_certificate/CertificateRequestorFunction/Resource
+      aws:cdk:path: nkwww-dev-us-east-1-dns-certificate/certificatedns_certificate/CertificateRequestorFunction/Resource
       aws:asset:path: asset.0b9723d54b7db3fbfc1a143398b02392e5fe080a68535480782a949b4372d0f0
       aws:asset:property: Code
   certificatednscertificateCertificateRequestorResourceACB8BDCD:
@@ -85,7 +85,7 @@ Resources:
     UpdateReplacePolicy: Delete
     DeletionPolicy: Delete
     Metadata:
-      aws:cdk:path: nkwww-dev-eu-west-1-dns-certificate/certificatedns_certificate/CertificateRequestorResource/Default
+      aws:cdk:path: nkwww-dev-us-east-1-dns-certificate/certificatedns_certificate/CertificateRequestorResource/Default
   CDKMetadata:
     Type: AWS::CDK::Metadata
     Properties:
