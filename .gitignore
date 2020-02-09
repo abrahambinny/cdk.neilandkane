@@ -3,3 +3,4 @@
 **__pycache__
 cdk.out/manifest.json
 neilandkane/neilandkane.egg-info/*
+cdk.out/parameters.json
